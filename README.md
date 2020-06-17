@@ -5,21 +5,21 @@ Desafío CRUD con Firebase (Firestore y Functions) y API REST
 ## API REST
 
 - **Obtener todos los pacientes**
-Método: GET
-Ruta: /
+  - Método: GET
+  - Ruta: /
 
 - **Obtener paciente por ID**
-Método: GET
-Ruta: /patient/:patientId
+  - Método: GET
+  - Ruta: /patient/:patientId
 
 - **Agregar paciente**
-Método: POST
-Ruta: /patient/:patientId
+  - Método: POST
+  - Ruta: /patient/:patientId
 
 - **Editar paciente por ID**
-Método: PUT
-Ruta: /patient/:patientId
+  - Método: PUT
+  - Ruta: /patient/:patientId
 
 - **Eliminar paciente por ID**
-Método: DELETE
-Ruta: /patient/:patientId
+  - Método: DELETE
+  - Ruta: /patient/:patientId
