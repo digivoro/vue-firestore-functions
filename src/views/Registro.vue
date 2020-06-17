@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1 class="mb-5">Registro de pacientes</h1>
-    <b-form @submit.prevent="onSubmit" @reset="onReset" v-if="show">
+    <b-form @submit.prevent="onSubmit" @reset.prevent="onReset" v-if="show">
       <b-form-group id="input-group-1" class="row">
         <b-form-input
           id="input-1"
@@ -56,13 +56,15 @@ export default {
   },
   methods: {
     ...mapActions(["registrarPaciente"]),
-    onSubmit: function() {
+    onSubmit: async function() {
       console.log("Registrando:", this.form);
-      this.registrarPaciente(this.form);
+      await this.registrarPaciente(this.form);
+      this.limpiarFormulario();
     },
-    onReset(evt) {
-      evt.preventDefault();
-      // Reset our form values
+    onReset() {
+      this.limpiarFormulario();
+    },
+    limpiarFormulario() {
       this.form.email = "";
       this.form.name = "";
       this.form.age = "";

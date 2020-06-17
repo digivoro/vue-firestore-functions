@@ -15,14 +15,22 @@ export default new Vuex.Store({
   },
 
   mutations: {
+    TOGGLE_LOADING: ({ loading }, componente) => {
+      loading[componente] = !loading[componente];
+    },
     INICIALIZAR_PACIENTES: (state, pacientes) => {
+      state.pacientes = [];
       pacientes.forEach(paciente => {
         let { age, email, name } = paciente.data;
         state.pacientes.push({
           id: paciente.id,
           age,
           email,
-          name
+          name,
+          editando: false,
+          inputName: name,
+          inputEmail: email,
+          inputAge: age
         });
       });
     },
@@ -30,21 +38,46 @@ export default new Vuex.Store({
       state.pacientes.push(paciente);
     },
     ELIMINAR_PACIENTE: (state, idPaciente) => {
-      state.pacientes.splice(idPaciente, 1);
+      state.pacientes = state.pacientes.filter(
+        paciente => paciente.id != idPaciente
+      );
+    },
+    TOGGLE_EDICION_PACIENTE: (state, idPaciente) => {
+      state.pacientes = state.pacientes.map(paciente =>
+        paciente.id !== idPaciente
+          ? paciente
+          : { ...paciente, editando: !paciente.editando }
+      );
+    },
+    GUARDAR_PACIENTE_EDITADO: (state, pacienteEditado) => {
+      let { id, inputName, inputAge, inputEmail } = pacienteEditado;
+      state.pacientes = state.pacientes.map(paciente =>
+        paciente.id !== id
+          ? paciente
+          : {
+              ...pacienteEditado,
+              name: inputName,
+              age: inputAge,
+              email: inputEmail
+            }
+      );
     }
   },
 
   actions: {
-    obtenerPacientes: async context => {
+    obtenerPacientes: async ({ commit }) => {
       try {
+        commit("TOGGLE_LOADING", "tablaPacientes");
         console.log("--- obtenerPacientes");
         let res = await axios.get(PATIENTS_FN_URL);
-        context.commit("INICIALIZAR_PACIENTES", res.data);
+        commit("INICIALIZAR_PACIENTES", res.data);
       } catch (error) {
         console.log(error);
+      } finally {
+        commit("TOGGLE_LOADING", "tablaPacientes");
       }
     },
-    registrarPaciente: async (context, paciente) => {
+    registrarPaciente: async ({ commit }, paciente) => {
       try {
         console.log("--- registrarPaciente", paciente);
         let res = await axios({
@@ -53,7 +86,7 @@ export default new Vuex.Store({
           data: paciente
         });
         console.log(res);
-        context.commit("REGISTRAR_PACIENTE", {
+        commit("REGISTRAR_PACIENTE", {
           ...paciente,
           id: res.data
         });
@@ -61,18 +94,55 @@ export default new Vuex.Store({
         console.log(error);
       }
     },
-    eliminarPaciente: async (context, idPaciente) => {
+    eliminarPaciente: async ({ commit }, idPaciente) => {
       try {
+        commit("TOGGLE_LOADING", "tablaPacientes");
         console.log("--- eliminarPaciente", idPaciente);
+
         let res = await axios({
           method: "delete",
           url: `${PATIENTS_FN_URL}/patient/${idPaciente}`
         });
         console.log(res);
-        context.commit("ELIMINAR_PACIENTE", idPaciente);
+        commit("ELIMINAR_PACIENTE", idPaciente);
       } catch (error) {
         console.log(error);
+      } finally {
+        commit("TOGGLE_LOADING", "tablaPacientes");
       }
+    },
+    activarEdicionPaciente: ({ commit }, idPaciente) => {
+      commit("TOGGLE_EDICION_PACIENTE", idPaciente);
+    },
+    guardarPacienteEditado: async ({ commit }, pacienteEditado) => {
+      console.log("guardarPacienteEditado:");
+      commit("TOGGLE_LOADING", "tablaPacientes");
+      let { id, inputAge, inputEmail, inputName } = pacienteEditado;
+
+      try {
+        let res = await axios({
+          method: "put",
+          url: `${PATIENTS_FN_URL}/patient/${id}`,
+          data: {
+            age: inputAge,
+            email: inputEmail,
+            name: inputName
+          }
+        });
+        console.log(res);
+        commit("GUARDAR_PACIENTE_EDITADO", pacienteEditado);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        commit("TOGGLE_EDICION_PACIENTE", id);
+        commit("TOGGLE_LOADING", "tablaPacientes");
+      }
+    }
+  },
+
+  getters: {
+    getPacientes: state => {
+      return state.pacientes;
     }
   }
 });

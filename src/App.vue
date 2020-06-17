@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" variant="info" class="mb-5">
-      <b-navbar-brand href="#">Firebase Functions + Firestore</b-navbar-brand>
+      <b-navbar-brand href="/">
+        Vuex + Firebase Functions + Firestore
+      </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -12,13 +14,26 @@
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
-    <div class="container">
+    <div class="container-fluid">
       <transition>
         <router-view />
       </transition>
     </div>
   </div>
 </template>
+
+<script>
+import { mapActions } from "vuex";
+
+export default {
+  methods: mapActions(["obtenerPacientes"]),
+
+  mounted: function() {
+    this.obtenerPacientes();
+  }
+};
+</script>
+
 <style lang="scss">
 .v-enter {
   opacity: 0;
